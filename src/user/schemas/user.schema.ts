@@ -8,10 +8,10 @@ export class User {
     @Prop({type:String,required:true,minlength:[3,"Name must be at least 3 characters"],maxlength:[30,"Name must be at most 30 characters"]})
     name: string;
 
-    @Prop({type:URL,required:true,unique:true})
+    @Prop({type:String,required:true,unique:true})
     email: string;
 
-    @Prop({type:String,required:true,minlength:[3,"password must be at least 3 characters"],maxlength:[20,"password must be at most 20 characters"]})
+    @Prop({type:String,required:true,minlength:[3,"password must be at least 3 characters"],maxlength:[2000,"password must be at most 2000 characters"]})
     password: string;
 
     @Prop({type:String,required:true,enum:['admin','user']})

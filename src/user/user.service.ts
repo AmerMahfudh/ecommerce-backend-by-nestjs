@@ -1,31 +1,86 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
+import { saltOrRounds } from 'utilies/constant';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private readonly userModel:Model<User>) {  }
-  create(createUserDto: CreateUserDto) {
-    return this.userModel.create(createUserDto);
+
+
+  async create(createUserDto: CreateUserDto):Promise<{status:number,message:string,data:User}> {
+    const ifUserExist = await this.userModel.findOne({email:createUserDto.email});
+    if(ifUserExist){
+      throw new HttpException('User already exist',400);
+    }
+
+    const password = await this.hasPassword(createUserDto.password);
+    const user={
+      password,
+      role:createUserDto.role ??'user',
+      active:true
+    }
+    return {
+      status:200,
+      message:'User created successfully',
+      data:await this.userModel.create({...createUserDto,...user}),
+    };
   }
 
   async findAll() {
-    return await this.userModel.find();
+    return await this.userModel.find().select('-password -__v');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string):Promise<{status:number,data:User}> {
+    const user = await this.userModel.findById(id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    return {
+      status:200,
+      data:user
+    };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user ${updateUserDto}`;
+  async update(id: string, updateUserDto: UpdateUserDto):Promise<{status:number,message:string,data:User}> {
+    const user = await this.userModel.findById(id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    if(updateUserDto.password){
+      updateUserDto.password=await this.hasPassword(updateUserDto.password);
+    }
+    Object.assign(user,updateUserDto);
+    await user.validate();
+    await user.save();
+    return{
+      status:200,
+      message:'User updated successfully',
+      data:user,
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string):Promise<{status:number,message:string}> {
+    const user = await this.userModel.findById(id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    await this.userModel.findByIdAndDelete(id);
+    return{
+      status:200,
+      message:"User deleted sucessfully"
+    } ;
+  }
+
+
+  private async hasPassword(password:string):Promise<string>{
+    const salt = await bcrypt.genSalt(saltOrRounds);
+    const hash = await bcrypt.hash(password, salt);
+    return hash;
   }
 }
 
