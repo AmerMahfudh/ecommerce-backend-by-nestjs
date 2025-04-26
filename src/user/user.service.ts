@@ -31,8 +31,32 @@ export class UserService {
     };
   }
 
-  async findAll() {
-    return await this.userModel.find().select('-password -__v');
+  async findAll(query) {
+    const {_limit=1000_000_000,name,sort='asc',skip=0,email,role}=query;
+    if(Number.isNaN(Number(+_limit))){
+      throw new HttpException('Invalid limit',400);
+    }
+    if(Number.isNaN(Number(+skip))){
+      throw new HttpException('Invalid skip',400);
+    }
+    if(!["asc","desc"].includes(sort)){
+      throw new HttpException("Invalid sort",400);
+    }
+    const filterUsers = await this.userModel.find().
+    select('-password -__v').
+    skip(skip)
+    .limit(_limit)
+    .where('name',new RegExp(name,'i'))
+    .where('email',new RegExp(email,'i'))
+    .where('role',new RegExp(role,'i'))
+    .sort({name:sort})
+    .exec()
+    return {
+      status:200,
+      message:'Users found sucessfully',
+      length:filterUsers.length,
+      data:filterUsers,
+  };
   }
 
   async findOne(id: string):Promise<{status:number,data:User}> {
