@@ -6,6 +6,7 @@ import { AuthGuard } from './Guards/Auth.guard';
 import { Roles } from './decorators/Roles.decorator';
 
 
+
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -52,4 +53,6 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
+
+
 }

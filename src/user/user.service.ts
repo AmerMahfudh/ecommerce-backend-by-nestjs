@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
 import { saltOrRounds } from 'utilies/constant';
+;
 
 @Injectable()
 export class UserService {
@@ -100,12 +101,59 @@ export class UserService {
     } ;
   }
 
+  // =======================================================================================
+  // ========================User Can Get Data======================== 
+  async getMe(payload){
+    if(!payload._id) throw new NotFoundException('User not found');
+    const user = await this.userModel.findById(payload._id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    return {
+      status:200,
+      message:'user found',
+      data:user
+    };
+  }
 
-  private async hasPassword(password:string):Promise<string>{
+  async updateMe(payload,updateUserDto:UpdateUserDto){
+    if(!payload._id) throw new NotFoundException('User not found');
+    const user = await this.userModel.findById(payload._id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    Object.assign(user,{...payload,...updateUserDto});
+    await user.save()
+    return {
+      status:200,
+      message:'user updated sucessfully',
+      data:user
+    };
+  }
+
+  async deleteMe(payload){
+    if(!payload._id){
+      throw new NotFoundException('User not found');
+    }
+    const user = await this.userModel.findById(payload._id).select('-password -__v');
+    if(!user){
+      throw new NotFoundException('User not found');
+    }
+    return {
+      status:200,
+      message:'User deleted successfully',
+      data:await this.userModel.findByIdAndUpdate(payload._id,{active:false},{new:true,runValidators:true})
+    } 
+  }
+
+
+  async hasPassword(password:string):Promise<string>{
     const salt = await bcrypt.genSalt(saltOrRounds);
     const hash = await bcrypt.hash(password, salt);
     return hash;
   }
+
+  
 }
 
 

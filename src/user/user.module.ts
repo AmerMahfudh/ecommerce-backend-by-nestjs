@@ -5,6 +5,7 @@ import { User, UserSchema } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as mongooseUniqueValidator from 'mongoose-unique-validator';
 import { JwtModule } from '@nestjs/jwt';
+import { UserMeController } from './normal-user.controller';
 @Module({
   imports:[MongooseModule.forFeatureAsync([{ name: User.name,
     useFactory: () => {
@@ -16,7 +17,8 @@ import { JwtModule } from '@nestjs/jwt';
   },}]),
   JwtModule
   ],
-  controllers: [UserController],
+  controllers: [UserController,UserMeController],
   providers: [UserService],
+  exports:[UserService]
 })
 export class UserModule {}
