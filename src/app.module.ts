@@ -4,6 +4,7 @@ import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 
 @Module({
@@ -32,6 +33,20 @@ import { AuthModule } from './auth/auth.module';
       }),
     }),
     AuthModule,
+    MailerModule.forRootAsync({
+      inject:[ConfigService],
+      useFactory:(configService:ConfigService)=>{
+        return {
+          transport: {
+            service: 'gmail',
+            auth: {
+              user: configService.get<string>('EMAIL_USERNAME'),
+              pass: configService.get<string>('EMAIL_PASSWORD'),
+            },
+          },
+        };
+      }
+    }),
 
   ],
   controllers: [],

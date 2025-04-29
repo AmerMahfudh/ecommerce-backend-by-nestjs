@@ -62,3 +62,12 @@ export class SignInDto{
     @MaxLength(20,{message:"password must be at most 20 characters"})
     password:string;
 }
+
+
+
+export class ResetPasswordDto{
+    @IsString({message:"email must be a string"}) 
+    @IsEmail({},{message:"Email is not valid"})
+    @MinLength(0,{})
+    email:string;
+}
