@@ -35,7 +35,7 @@ export class AuthGuard implements CanActivate {
                     secret:this.configService.get<string>('JWT_SECRET')
                 }
             );
-            if(!payload._id && payload.role === 'admin') {
+            if(!payload._id && payload.role.toLowerCase() === 'admin') {
                 request[CURRNET_USER_KEY] = payload;
                 return true;
             }

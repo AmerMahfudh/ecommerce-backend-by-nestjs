@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CategoryModule } from './category/category.module';
 
 
 @Module({
@@ -47,6 +48,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
         };
       }
     }),
+    CategoryModule,
 
   ],
   controllers: [],
